@@ -1,0 +1,14 @@
+name: captivate
+description: A network client, written in Dart, that talks to the captivate.fm podcast service.
+version: 0.1.0
+repository: https://github.com/flutter-bounty-hunters/captivate
+
+environment:
+  sdk: ^3.3.3
+
+dependencies:
+  http: ^1.2.1
+
+dev_dependencies:
+  lints: ^3.0.0
+  test: ^1.24.0
