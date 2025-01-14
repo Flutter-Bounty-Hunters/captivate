@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:captivate/src/episode.dart';
+import 'package:captivate/src/logging.dart';
 import 'package:captivate/src/show.dart';
 import 'package:captivate/src/user.dart';
 import 'package:http/http.dart';
@@ -11,6 +12,8 @@ class CaptivateClient {
     required String username,
     required String apiToken,
   }) async {
+    CaptivateLogs.network.info("Authenticate - username: $username");
+
     var request = MultipartRequest('POST', Uri.parse('https://api.captivate.fm/authenticate/token'));
     request.fields.addAll(
       {
@@ -24,14 +27,18 @@ class CaptivateClient {
     if (response.statusCode == 200) {
       final body = await response.stream.bytesToString();
       final json = jsonDecode(body);
+      CaptivateLogs.network.fine(const JsonEncoder.withIndent("  ").convert(json));
+
       return UserPayload.fromJson(json);
     } else {
-      print(response.reasonPhrase);
+      _logNetworkError(response);
       return null;
     }
   }
 
   Future<ShowPayload?> getShow(String authToken, String showId) async {
+    CaptivateLogs.network.info("Get show: $showId");
+
     final response = await get(
       Uri.parse('https://api.captivate.fm/shows/$showId/'),
       headers: {
@@ -41,17 +48,39 @@ class CaptivateClient {
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
-
-      print(JsonEncoder.withIndent("  ").convert(json));
+      CaptivateLogs.network.fine(const JsonEncoder.withIndent("  ").convert(json));
 
       return ShowPayload.fromJson(json);
     } else {
-      print(response.reasonPhrase);
+      _logNetworkError(response);
+      return null;
+    }
+  }
+
+  Future<EpisodesPayload?> getEpisodes(String authToken, String showId) async {
+    CaptivateLogs.network.info("Get episodes - show: $showId");
+
+    final response = await get(
+      Uri.parse('https://api.captivate.fm/shows/$showId/episodes'),
+      headers: {
+        "Authorization": "Bearer $authToken",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      CaptivateLogs.network.fine(const JsonEncoder.withIndent("  ").convert(json));
+
+      return EpisodesPayload.fromJson(json);
+    } else {
+      _logNetworkError(response);
       return null;
     }
   }
 
   Future<EpisodePayload?> getEpisode(String authToken, String episodeId) async {
+    CaptivateLogs.network.info("Get episode - episode: $episodeId");
+
     final response = await get(
       Uri.parse('https://api.captivate.fm/episodes/$episodeId'),
       headers: {
@@ -61,38 +90,40 @@ class CaptivateClient {
 
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
-
-      print(const JsonEncoder.withIndent("  ").convert(json));
+      CaptivateLogs.network.fine(const JsonEncoder.withIndent("  ").convert(json));
 
       return EpisodePayload.fromJson(json);
     } else {
-      print(response.reasonPhrase);
+      _logNetworkError(response);
       return null;
     }
   }
 
   Future<void> createEpisode(String authToken, Episode episode) async {
+    CaptivateLogs.network.info("Create episode - episode: ${episode.title}");
+
     var request = MultipartRequest(
       'POST',
       Uri.parse('https://api.captivate.fm/episodes'),
-    )..headers.addAll({
+    )
+      ..headers.addAll({
         "Authorization": "Bearer $authToken",
-      });
-
-    request.fields.addAll(episode.toFormFields());
+      })
+      ..fields.addAll(episode.toFormFields());
 
     StreamedResponse response = await request.send();
 
     if (response.statusCode == 200) {
       final body = await response.stream.bytesToString();
-      print("Success:");
-      print(body);
+      CaptivateLogs.network.fine("Success:\n${const JsonEncoder.withIndent(" ").convert(body)}");
     } else {
-      print(response.reasonPhrase);
+      _logNetworkError(response);
     }
   }
 
   Future<void> updateEpisode(String authToken, String episodeId, Episode updatedEpisode) async {
+    CaptivateLogs.network.info("Update episode - episode: $episodeId");
+
     var request = MultipartRequest(
       'PUT',
       Uri.parse('https://api.captivate.fm/episodes/$episodeId'),
@@ -104,24 +135,22 @@ class CaptivateClient {
         updatedEpisode.toFormFields(),
       );
 
-    print("URL:");
-    print(request.url);
-    print("");
-
-    print("Fields:");
+    CaptivateLogs.network.finer("Multi-part request configuration:");
+    CaptivateLogs.network.finer(" - url: ${request.url}");
+    CaptivateLogs.network.finer(" - fields:");
     for (final field in request.fields.entries) {
-      print(" - ${field.key}: ${field.value}");
+      CaptivateLogs.network.finer("   - ${field.key}: ${field.value}");
     }
-    print("");
+    CaptivateLogs.network.finer("");
 
+    // Send the multi-part request to the server.
     StreamedResponse response = await request.send();
 
     if (response.statusCode == 200) {
-      print("Success:");
       final body = await response.stream.bytesToString();
-      print(body);
+      CaptivateLogs.network.fine("Success:\n${const JsonEncoder.withIndent(" ").convert(body)}");
     } else {
-      print(response.reasonPhrase);
+      _logNetworkError(response);
     }
   }
 
@@ -130,6 +159,7 @@ class CaptivateClient {
     required String showId,
     required File mediaFile,
   }) async {
+    CaptivateLogs.network.info("Upload media - show: $showId, media file: $mediaFile");
     var request = MultipartRequest(
       'POST',
       Uri.parse('https://api.captivate.fm/shows/$showId/media'),
@@ -146,10 +176,28 @@ class CaptivateClient {
 
     if (response.statusCode == 200) {
       final body = await response.stream.bytesToString();
-      print("Success:");
-      print(body);
+      CaptivateLogs.network.fine("Success:\n${const JsonEncoder.withIndent(" ").convert(body)}");
     } else {
-      print(response.reasonPhrase);
+      _logNetworkError(response);
     }
   }
+}
+
+void _logNetworkError(BaseResponse response) {
+  if (!CaptivateLogs.isLogActive(CaptivateLogs.network)) {
+    return;
+  }
+
+  final request = response.request;
+
+  CaptivateLogs.network.warning([
+    "Network request failed!",
+    if (request != null) ...[
+      "Request:",
+      "${request.headers["method"] != null ? "(${request.headers["method"]}) " : ""}${request}",
+      "",
+    ],
+    "Response:",
+    "${response.statusCode} - ${response.reasonPhrase}",
+  ].join("\n"));
 }

@@ -1,3 +1,23 @@
+class EpisodesPayload {
+  static EpisodesPayload fromJson(Map<String, dynamic> json) {
+    return EpisodesPayload(
+      count: json["count"],
+      episodes: [
+        for (final episodeJson in json["episodes"]) //
+          Episode.fromJson(episodeJson),
+      ],
+    );
+  }
+
+  const EpisodesPayload({
+    required this.count,
+    required this.episodes,
+  });
+
+  final int count;
+  final List<Episode> episodes;
+}
+
 class EpisodePayload {
   static EpisodePayload fromJson(Map<String, dynamic> json) {
     return EpisodePayload(
