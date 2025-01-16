@@ -43,7 +43,7 @@ Future<void> main() async {
   final episodes = await client.getEpisodes(authToken, showId);
   print("Episodes (${episodes!.count}):");
   for (final episode in episodes.episodes) {
-    print(" - ${episode.title}");
+    print(" - ${episode.title} (${episode.id})");
   }
   print("");
 

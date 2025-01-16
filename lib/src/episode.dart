@@ -36,6 +36,7 @@ class Episode {
   static Episode fromJson(Map<String, dynamic> json) {
     return Episode(
       showId: json['shows_id'],
+      id: json['id'],
       title: json['title'],
       iTunesTitle: json['itunes_title'],
       mediaId: json['media_id'],
@@ -59,6 +60,7 @@ class Episode {
 
   const Episode({
     this.showId,
+    this.id,
     this.status,
     this.date,
     this.link,
@@ -80,6 +82,7 @@ class Episode {
   });
 
   final String? showId;
+  final String? id;
 
   final String? status;
   // Format: "YYYY-MM-DD HH:mm:ss"
@@ -109,6 +112,8 @@ class Episode {
     return {
       if (showId != null) //
         'shows_id': showId!,
+      if (id != null) //
+        'id': id!,
       if (title != null) //
         'title': title!,
       if (iTunesTitle != null) //
