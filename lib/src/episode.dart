@@ -41,6 +41,7 @@ class Episode {
       iTunesTitle: json['itunes_title'],
       mediaId: json['media_id'],
       date: json['date'],
+      publishedDate: json['published_date'],
       status: json['status'],
       showNotes: json['shownotes'],
       summary: json['summary'],
@@ -63,6 +64,7 @@ class Episode {
     this.id,
     this.status,
     this.date,
+    this.publishedDate,
     this.link,
     this.title,
     this.author,
@@ -85,8 +87,11 @@ class Episode {
   final String? id;
 
   final String? status;
+  // FIXME: Is "date" real? It's not included when querying episodes, but maybe it's
+  //        used when submitting a new episode?
   // Format: "YYYY-MM-DD HH:mm:ss"
   final String? date;
+  final String? publishedDate;
   final String? link;
 
   final String? title;
