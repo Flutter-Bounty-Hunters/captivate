@@ -194,7 +194,7 @@ void _logNetworkError(BaseResponse response) {
     "Network request failed!",
     if (request != null) ...[
       "Request:",
-      "${request.headers["method"] != null ? "(${request.headers["method"]}) " : ""}${request}",
+      "${request.headers["method"] != null ? "(${request.headers["method"]}) " : ""}$request",
       "",
     ],
     "Response:",

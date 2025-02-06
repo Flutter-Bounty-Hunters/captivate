@@ -1,15 +1,17 @@
 import 'package:logging/logging.dart';
 
+export 'package:logging/logging.dart' show Level;
+
 class CaptivateLogs {
   static final network = Logger("network");
 
   static final _activeLoggers = <Logger>{};
 
-  static void initAllLogs(Level level) {
-    initLoggers(level, {Logger.root});
+  static void initAllLogs([Level level = Level.INFO]) {
+    initLoggers({Logger.root}, level);
   }
 
-  static void initLoggers(Level level, Set<Logger> loggers) {
+  static void initLoggers(Set<Logger> loggers, [Level level = Level.INFO]) {
     hierarchicalLoggingEnabled = true;
 
     for (final logger in loggers) {
