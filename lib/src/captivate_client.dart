@@ -245,21 +245,23 @@ class CaptivateClient {
   }
 }
 
-class UploadProgressWithResult<EntityType> with Listenable {
+class UploadProgressWithResult<EntityType> {
   UploadProgressWithResult(this._uploadStream, this._response, this._parser) {
-    _uploadStream.addListener(notifyListeners);
+    _uploadStream.addListener(_onUploadChange);
     _response.then(_onUploadComplete).catchError(_onError);
   }
 
-  @override
   void dispose() {
     _uploadStream.dispose();
-    super.dispose();
   }
 
   final HttpFileUploadStream _uploadStream;
   final Future<StreamedResponse> _response;
   final EntityParser<EntityType> _parser;
+
+  void _onUploadChange() {
+    _progress.add(_uploadStream.progress);
+  }
 
   void _onUploadComplete(StreamedResponse response) async {
     _isDone = true;
@@ -267,7 +269,6 @@ class UploadProgressWithResult<EntityType> with Listenable {
       _wasSuccessful = false;
       _error = "HTTP Error (${response.statusCode}): ${response.reasonPhrase}";
       _onComplete.complete();
-      notifyListeners();
       return;
     }
 
@@ -279,7 +280,6 @@ class UploadProgressWithResult<EntityType> with Listenable {
     }
 
     _onComplete.complete();
-    notifyListeners();
   }
 
   void _onError(Object error) {
@@ -288,10 +288,10 @@ class UploadProgressWithResult<EntityType> with Listenable {
     _error = error;
 
     _onComplete.complete();
-    notifyListeners();
   }
 
-  double get progress => _uploadStream.progress;
+  Stream<double> get progress => _progress.stream;
+  final _progress = StreamController<double>();
 
   Future<void> get onComplete => _onComplete.future;
   final _onComplete = Completer();
