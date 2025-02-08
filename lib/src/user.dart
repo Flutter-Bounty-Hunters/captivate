@@ -52,6 +52,6 @@ class User {
 
   final String created;
   final int admin;
-  final String defaultShow;
+  final String? defaultShow;
   final String defaultShowOrder;
 }
