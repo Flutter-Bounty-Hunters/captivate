@@ -42,8 +42,10 @@ class Media {
       createdAt: json["created_at"],
       updatedAt: json["updated_at"],
       mediaName: json["media_name"],
-      showsId: json["shows_id"],
+      status: json["status"],
       usersId: json["users_id"],
+      showsId: json["shows_id"],
+      episodesId: json["episodes_id"],
       type: json["type"],
       mediaType: json["media_type"],
       mediaSize: json["media_size"],
@@ -106,8 +108,10 @@ class Media {
     this.createdAt,
     this.updatedAt,
     this.mediaName,
-    this.showsId,
+    this.status,
     this.usersId,
+    this.showsId,
+    this.episodesId,
     this.type,
     this.mediaType,
     this.mediaSize,
@@ -124,8 +128,11 @@ class Media {
   final String? updatedAt; // e.g., "2025-02-06 08:03:08"
   final String? mediaName; // e.g., "flutter-spaces-2025-01-22-hungrimind-ft-tadas-and-robert-cut-converted"
 
-  final String? showsId;
+  final String? status; // e.g., "Published"
+
   final String? usersId;
+  final String? showsId;
+  final String? episodesId;
 
   final String? type; // e.g., "audio
   final String? mediaType; // e.g., "audio/mpeg"
