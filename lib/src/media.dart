@@ -1,3 +1,40 @@
+class MediaListPayload {
+  static MediaListPayload fromJson(Map<String, dynamic> json) {
+    return MediaListPayload(
+      limit: json["limit"],
+      totalCount: json["totalCount"],
+      mediaList: [
+        for (final mediaJson in json["media"]) //
+          Media.fromJson(mediaJson),
+      ],
+    );
+  }
+
+  const MediaListPayload({
+    required this.limit,
+    required this.totalCount,
+    required this.mediaList,
+  });
+
+  final int limit;
+  final int totalCount;
+  final List<Media> mediaList;
+}
+
+class MediaPayload {
+  static MediaPayload fromJson(Map<String, dynamic> json) {
+    return MediaPayload(
+      media: Media.fromJson(json["media"]),
+    );
+  }
+
+  const MediaPayload({
+    required this.media,
+  });
+
+  final Media media;
+}
+
 class Media {
   static Media fromJson(Map<String, dynamic> json) {
     return Media(
@@ -11,13 +48,35 @@ class Media {
       mediaType: json["media_type"],
       mediaSize: json["media_size"],
       mediaUrl: json["media_url"],
-      mediaBitRate: json["media_bit_rate"],
-      mediaDuration: json["media_duration"],
+      mediaBitRate: _parseIntFromIntOrString(json["media_bit_rate"]),
+      mediaDuration: _parseDoubleFromNumOrString(json["media_duration"]),
       mediaId3Size: json["media_id3_size"],
       objectStorageLocation: json["object_storage_location"],
       // TODO: "integrated_lufs" when we figure out what data type it is (we're getting `null` in json).
       nonCdnUrl: json["non_cdn_url"],
     );
+  }
+
+  static int? _parseIntFromIntOrString(Object? value) {
+    if (value is int) {
+      return value;
+    } else if (value is String) {
+      return int.tryParse(value);
+    } else {
+      return null;
+    }
+  }
+
+  static double? _parseDoubleFromNumOrString(Object? value) {
+    if (value is double) {
+      return value;
+    } else if (value is num) {
+      return value.toDouble();
+    } else if (value is String) {
+      return double.tryParse(value);
+    } else {
+      return null;
+    }
   }
 
   // {
