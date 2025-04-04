@@ -32,7 +32,14 @@ class CaptivateClient {
       final json = jsonDecode(body);
       CaptivateLogs.network.fine(const JsonEncoder.withIndent("  ").convert(json));
 
-      return UserPayload.fromJson(json);
+      try {
+        return UserPayload.fromJson(json);
+      } catch (error) {
+        CaptivateLogs.network.shout(
+          "Failed to deserialize user payload:\n${JsonEncoder.withIndent("  ").convert(json)}",
+        );
+        return null;
+      }
     } else {
       _logNetworkError(response);
       return null;
@@ -306,7 +313,7 @@ class CaptivateClient {
       }
 
       CaptivateLogs.network.fine("Success:\n${const JsonEncoder.withIndent(" ").convert(bodyJson)}");
-      return Media.fromJson(bodyJson);
+      return MediaPayload.fromJson(bodyJson).media;
     } else {
       CaptivateLogs.network.warning(
           "Failed to upload media (${mediaFile.path}) - HTTP error (${response.statusCode}): ${response.reasonPhrase}");
